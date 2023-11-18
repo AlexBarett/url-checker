@@ -49,17 +49,19 @@ func main() {
 
 	go func() {
 		for url, ok := <-urlQueue; ok; url, ok = <-urlQueue {
-			wp.Exec(
-				func() {
-					info := client.GetRequestInfo(url)
-					mutex.Lock()
-					defer mutex.Unlock()
-					urlInfoMap[url] = info
-					urlCompleteCount++
-					fmt.Printf("\rUrls complete: %v", urlCompleteCount)
-					wg.Done()
-				},
-			)
+			go func(url string) {
+				wp.Exec(
+					func() {
+						info := client.GetRequestInfo(url)
+						mutex.Lock()
+						defer mutex.Unlock()
+						urlInfoMap[url] = info
+						urlCompleteCount++
+						fmt.Printf("\rUrls complete: %v", urlCompleteCount)
+						wg.Done()
+					},
+				)
+			}(url)
 		}
 	}()
 
